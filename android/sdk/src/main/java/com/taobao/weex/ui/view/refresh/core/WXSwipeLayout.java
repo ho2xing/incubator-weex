@@ -98,6 +98,8 @@ public class WXSwipeLayout extends FrameLayout implements NestedScrollingParent,
   private static final int INVALID = -1;
   private static final int PULL_REFRESH = 0;
   private static final int LOAD_MORE = 1;
+  private static final int DEFAULT_ACTION = 2;
+
 
   // Enable PullRefresh and Loadmore
   private boolean mPullRefreshEnable = false;
@@ -189,26 +191,31 @@ public class WXSwipeLayout extends FrameLayout implements NestedScrollingParent,
    * Init refresh view or loading view
    */
   private void setRefreshView() {
-    // SetUp HeaderView
     FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0);
-    headerView = new WXRefreshView(getContext());
-    headerView.setStartEndTrim(0, 0.75f);
-    headerView.setBackgroundColor(mRefreshViewBgColor);
-    headerView.setProgressBgColor(mProgressBgColor);
-    headerView.setProgressColor(mProgressColor);
-    headerView.setContentGravity(Gravity.BOTTOM);
-    addView(headerView, lp);
+    // SetUp HeaderView
+    if(headerView == null){
+      headerView = new WXRefreshView(getContext());
+      headerView.setStartEndTrim(0, 0.75f);
+      headerView.setBackgroundColor(mRefreshViewBgColor);
+      headerView.setProgressBgColor(mProgressBgColor);
+      headerView.setProgressColor(mProgressColor);
+      headerView.setContentGravity(Gravity.BOTTOM);
+      addView(headerView, lp);
+    }
 
-    // SetUp FooterView
-    lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0);
-    lp.gravity = Gravity.BOTTOM;
-    footerView = new WXRefreshView(getContext());
-    footerView.setStartEndTrim(0.5f, 1.25f);
-    footerView.setBackgroundColor(mRefreshViewBgColor);
-    footerView.setProgressBgColor(mProgressBgColor);
-    footerView.setProgressColor(mProgressColor);
-    footerView.setContentGravity(Gravity.TOP);
-    addView(footerView, lp);
+    if(footerView == null){
+      // SetUp FooterView
+      lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0);
+      lp.gravity = Gravity.BOTTOM;
+      footerView = new WXRefreshView(getContext());
+      footerView.setStartEndTrim(0.5f, 1.25f);
+      footerView.setBackgroundColor(mRefreshViewBgColor);
+      footerView.setProgressBgColor(mProgressBgColor);
+      footerView.setProgressColor(mProgressColor);
+      footerView.setContentGravity(Gravity.TOP);
+      addView(footerView, lp);
+    }
+
   }
 
   @Override
@@ -506,6 +513,7 @@ public class WXSwipeLayout extends FrameLayout implements NestedScrollingParent,
    * @param h Height of refresh view or loading view
    */
   private void moveTargetView(float h) {
+    if(mTargetView == null) return;
     mTargetView.setTranslationY(h);
   }
 
@@ -523,7 +531,7 @@ public class WXSwipeLayout extends FrameLayout implements NestedScrollingParent,
     if (mPullRefreshEnable && mCurrentAction == PULL_REFRESH) {
       lp = (LayoutParams) headerView.getLayoutParams();
       if (lp.height >= refreshViewHeight) {
-        startRefresh(lp.height);
+        startRefresh(lp.height , true);
       } else if (lp.height > 0) {
         resetHeaderView(lp.height);
       } else {
@@ -547,7 +555,7 @@ public class WXSwipeLayout extends FrameLayout implements NestedScrollingParent,
    * Start Refresh
    * @param headerViewHeight
    */
-  private void startRefresh(int headerViewHeight) {
+  private void startRefresh(int headerViewHeight ,final boolean canCallback) {
     mRefreshing = true;
     ValueAnimator animator = ValueAnimator.ofFloat(headerViewHeight, refreshViewHeight);
     animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -564,7 +572,7 @@ public class WXSwipeLayout extends FrameLayout implements NestedScrollingParent,
       public void onAnimationEnd(Animator animation) {
         headerView.startAnimation();
         //TODO updateLoadText
-        if (onRefreshListener != null) {
+        if (onRefreshListener != null && canCallback) {
           onRefreshListener.onRefresh();
         }
       }
@@ -740,7 +748,7 @@ public class WXSwipeLayout extends FrameLayout implements NestedScrollingParent,
    * Callback on refresh finish
    */
   public void finishPullRefresh() {
-    if (mCurrentAction == PULL_REFRESH) {
+    if (mCurrentAction == PULL_REFRESH ||mCurrentAction ==DEFAULT_ACTION) {
       resetHeaderView(headerView == null ? 0 : headerView.getMeasuredHeight());
     }
   }
@@ -749,7 +757,7 @@ public class WXSwipeLayout extends FrameLayout implements NestedScrollingParent,
    * Callback on loadmore finish
    */
   public void finishPullLoad() {
-    if (mCurrentAction == LOAD_MORE) {
+    if (mCurrentAction == LOAD_MORE || mCurrentAction==DEFAULT_ACTION) {
       resetFootView(footerView == null ? 0 : footerView.getMeasuredHeight());
     }
   }
@@ -798,5 +806,13 @@ public class WXSwipeLayout extends FrameLayout implements NestedScrollingParent,
 
   public void setLoadingBgColor(int color) {
     footerView.setBackgroundColor(color);
+  }
+
+
+  public void displayRefresh(final boolean callback) {
+    if (!mRefreshing && refreshViewHeight > 0) {
+      mCurrentAction = DEFAULT_ACTION;
+      startRefresh((int) refreshViewHeight, callback);
+    }
   }
 }
