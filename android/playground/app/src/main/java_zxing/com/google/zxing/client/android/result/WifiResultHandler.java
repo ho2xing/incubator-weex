@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -61,7 +62,7 @@ public final class WifiResultHandler extends ResultHandler {
   public void handleButtonPress(int index) {
     if (index == 0) {
       WifiParsedResult wifiResult = (WifiParsedResult) getResult();
-      WifiManager wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+      WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
       if (wifiManager == null) {
         Log.w(TAG, "No WifiManager available from device");
         return;

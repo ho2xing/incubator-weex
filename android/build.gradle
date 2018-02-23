@@ -36,7 +36,8 @@ subprojects {
         dependencies {
             classpath 'com.android.tools.build:gradle:3.0.1'
             classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.0'
-            classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+            classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.8.2'
+            //classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
         }
     }
     ext {
@@ -47,6 +48,18 @@ subprojects {
         targetSdkVersion=26
         supportLibVersion="26.0.2"
         fastjsonLibVersion="1.1.46.android"
+
+        mavenResponseUrl="http://101.201.79.59:8081/nexus/content/repositories/com.yh.android/"
+        mavenUserName ="deployment"
+        mavenPassword = "changxin123456"
+
+        mavenName ='weex'
+        mavenGroupId  ='com.yh.common'
+        mavenArtifactId  ='weex'
+        mavenVersion  ='0.18.0' //版本号，必须按照此方法。依次递增
+        mavenPackaging = 'aar'
+
+
     }
 }
 

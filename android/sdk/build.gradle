@@ -16,6 +16,7 @@ plugins {
 apply plugin: 'com.android.library'
 apply plugin: 'checkstyle'
 apply plugin: 'com.getkeepsafe.dexcount'
+apply plugin: 'maven'
 
 ext.disableCov = project.hasProperty('disableCov') ? project.getProperty('disableCov') : 'false'
 if(!disableCov.toBoolean()){
@@ -166,4 +167,40 @@ if(file('../license/LICENSE').exists()){
         excludes(["com/taobao/weex/dom/flex/*.java"])
     }
     preBuild.dependsOn licenseFormat
+}
+
+
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+
+            //指定项目部署到的中央库地址，UserName和Password就是Part 1中注册的账号。
+            repository(url: project.mavenResponseUrl) {
+                authentication(userName: project.mavenUserName, password: project.mavenPassword)
+            }
+
+            pom.project {
+                name project.mavenName
+                groupId project.mavenGroupId
+                artifactId project.mavenArtifactId
+                version project.mavenVersion //版本号，必须按照此方法。依次递增
+                packaging project.mavenPackaging
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'uho'
+                        name 'uho'
+                    }
+                }
+            }
+        }
+    }
 }
